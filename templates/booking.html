@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Booking Summary #{{ booking.booking_id }} | Grand Royale{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 7rem; padding-bottom: 5rem; max-width: 900px;">
+  
+  <div class="section-header" style="margin-bottom: 2rem;">
+    <p class="section-subtitle">Step 2 of 3</p>
+    <h1 class="section-title">Reservation <span class="text-gold">Summary</span></h1>
+    <p style="color: var(--text-muted);">Please review your reservation details before proceeding to demo payment.</p>
+  </div>
+
+  <div class="glass-card" style="padding: 2.5rem; border-color: var(--gold-primary);">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-glass); padding-bottom: 1.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+      <div>
+        <span style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1px;">Booking Reference</span>
+        <h2 style="font-size: 1.6rem; color: var(--gold-primary); font-family: var(--font-heading);">{{ booking.booking_id }}</h2>
+      </div>
+      <div>
+        <span class="badge badge-warning" style="font-size: 0.9rem; padding: 0.4rem 1rem;">Status: {{ booking.booking_status }}</span>
+      </div>
+    </div>
+
+    <!-- Details Grid -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+      <div style="background: rgba(255, 255, 255, 0.02); padding: 1.2rem; border-radius: var(--radius-sm); border: 1px solid var(--border-light);">
+        <h4 style="color: var(--gold-light); font-size: 0.85rem; text-transform: uppercase; margin-bottom: 0.5rem;">Guest Information</h4>
+        <p style="font-weight: 600; font-size: 1rem;">{{ booking.user.name }}</p>
+        <p style="font-size: 0.85rem; color: var(--text-muted);">{{ booking.user.email }}</p>
+        <p style="font-size: 0.85rem; color: var(--text-muted);">{{ booking.user.phone }}</p>
+      </div>
+
+      <div style="background: rgba(255, 255, 255, 0.02); padding: 1.2rem; border-radius: var(--radius-sm); border: 1px solid var(--border-light);">
+        <h4 style="color: var(--gold-light); font-size: 0.85rem; text-transform: uppercase; margin-bottom: 0.5rem;">Suite Information</h4>
+        <p style="font-weight: 600; font-size: 1rem;">{{ booking.room.room_name }}</p>
+        <p style="font-size: 0.85rem; color: var(--text-muted);">Suite #{{ booking.room.room_number }} ({{ booking.room.type }})</p>
+        <p style="font-size: 0.85rem; color: var(--text-muted);">Guests: {{ booking.guests }} Person(s)</p>
+      </div>
+
+      <div style="background: rgba(255, 255, 255, 0.02); padding: 1.2rem; border-radius: var(--radius-sm); border: 1px solid var(--border-light);">
+        <h4 style="color: var(--gold-light); font-size: 0.85rem; text-transform: uppercase; margin-bottom: 0.5rem;">Stay Dates</h4>
+        <p style="font-size: 0.9rem;"><strong>Check-in:</strong> {{ booking.check_in.strftime('%B %d, %Y') }}</p>
+        <p style="font-size: 0.9rem;"><strong>Check-out:</strong> {{ booking.check_out.strftime('%B %d, %Y') }}</p>
+        <p style="font-size: 0.85rem; color: var(--gold-primary); margin-top: 0.3rem;">Total Nights: {{ booking.total_nights }} Night(s)</p>
+      </div>
+    </div>
+
+    <!-- Cost Breakdown -->
+    <div style="background: rgba(0, 0, 0, 0.5); padding: 1.5rem; border-radius: var(--radius-sm); margin-bottom: 2rem; border: 1px solid var(--border-glass);">
+      <h4 style="font-size: 1rem; color: var(--gold-light); margin-bottom: 1rem;">Financial Summary</h4>
+      
+      <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.95rem;">
+        <span>Suite Rate ({{ booking.total_nights }} night x ${{ "%.2f"|format(booking.room.price) }}):</span>
+        <span>${{ "%.2f"|format(booking.total_price) }}</span>
+      </div>
+      
+      <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.95rem;">
+        <span>Taxes & Luxury Resort Fee:</span>
+        <span style="color: var(--success);">INCLUDED</span>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; border-top: 1px solid var(--border-light); padding-top: 1rem; font-size: 1.3rem; font-weight: 700;">
+        <span>Total Amount Payable:</span>
+        <span class="text-gold">${{ "%.2f"|format(booking.total_price) }}</span>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div style="display: flex; gap: 1rem; justify-content: flex-end; flex-wrap: wrap;">
+      <a href="{{ url_for('main.room_details', room_id=booking.room_id) }}" class="btn btn-outline">
+        <i class="fa-solid fa-arrow-left"></i> Modify Details
+      </a>
+      <a href="{{ url_for('booking.payment_page', booking_id=booking.booking_id) }}" class="btn btn-gold" style="padding: 0.8rem 2rem;">
+        Proceed to Demo Payment <i class="fa-solid fa-credit-card"></i>
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

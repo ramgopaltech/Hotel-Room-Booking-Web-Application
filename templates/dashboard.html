@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block title %}Guest Dashboard | Grand Royale Luxury Hotel{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 7rem; padding-bottom: 5rem;">
+
+  <!-- User Welcome Header -->
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <p class="section-subtitle">Royal Guest Portal</p>
+      <h1 class="section-title">Welcome, <span class="text-gold">{{ user.name }}</span></h1>
+      <p style="color: var(--text-muted);">Manage your current stays, reservation history, and personal preferences.</p>
+    </div>
+
+    <a href="{{ url_for('main.rooms') }}" class="btn btn-gold">
+      <i class="fa-solid fa-plus"></i> Book Another Suite
+    </a>
+  </div>
+
+  <!-- Metric Counters -->
+  <div class="metrics-grid" style="margin-bottom: 2.5rem;">
+    <div class="metric-card">
+      <div class="metric-icon"><i class="fa-solid fa-calendar-check"></i></div>
+      <div class="metric-info">
+        <span class="metric-value">{{ bookings | length }}</span>
+        <span class="metric-label">Total Reservations</span>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-icon"><i class="fa-solid fa-clock font-gold"></i></div>
+      <div class="metric-info">
+        <span class="metric-value">{{ active_count }}</span>
+        <span class="metric-label">Active / Upcoming</span>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-icon"><i class="fa-solid fa-receipt"></i></div>
+      <div class="metric-info">
+        <span class="metric-value">${{ "%.2f"|format(total_spent) }}</span>
+        <span class="metric-label">Total Investment</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Content Tabs -->
+  <div class="glass-card" style="padding: 2rem;">
+    
+    <div style="display: flex; gap: 1rem; border-bottom: 1px solid var(--border-glass); padding-bottom: 1rem; margin-bottom: 1.5rem; overflow-x: auto;">
+      <a href="#" class="sidebar-link active" data-tab="tab-bookings">
+        <i class="fa-solid fa-list-check"></i> My Reservations
+      </a>
+      <a href="#" class="sidebar-link" data-tab="tab-profile">
+        <i class="fa-solid fa-user-pen"></i> Profile & Security Settings
+      </a>
+    </div>
+
+    <!-- TAB 1: BOOKINGS HISTORY TABLE -->
+    <div id="tab-bookings" class="tab-content" style="display: block;">
+      {% if bookings %}
+        <div class="table-container">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Booking Ref</th>
+                <th>Suite Name</th>
+                <th>Check In</th>
+                <th>Check Out</th>
+                <th>Nights</th>
+                <th>Total Price</th>
+                <th>Booking Status</th>
+                <th>Payment</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for b in bookings %}
+                <tr>
+                  <td style="font-weight: 700; color: var(--gold-primary);">{{ b.booking_id }}</td>
+                  <td>{{ b.room.room_name }} (#{{ b.room.room_number }})</td>
+                  <td>{{ b.check_in.strftime('%d %b %Y') }}</td>
+                  <td>{{ b.check_out.strftime('%d %b %Y') }}</td>
+                  <td>{{ b.total_nights }}</td>
+                  <td style="font-weight: 600;">${{ "%.2f"|format(b.total_price) }}</td>
+                  <td>
+                    {% if b.booking_status == 'Confirmed' %}
+                      <span class="badge badge-success">Confirmed</span>
+                    {% elif b.booking_status == 'Pending' %}
+                      <span class="badge badge-warning">Pending</span>
+                    {% elif b.booking_status == 'Cancelled' %}
+                      <span class="badge badge-danger">Cancelled</span>
+                    {% else %}
+                      <span class="badge badge-info">{{ b.booking_status }}</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if b.payment_status == 'Paid' %}
+                      <span class="badge badge-success">Paid</span>
+                    {% elif b.payment_status == 'Refunded' %}
+                      <span class="badge badge-warning">Refunded</span>
+                    {% else %}
+                      <span class="badge badge-danger">Unpaid</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <div style="display: flex; gap: 0.4rem;">
+                      {% if b.payment_status == 'Unpaid' and b.booking_status != 'Cancelled' %}
+                        <a href="{{ url_for('booking.payment_page', booking_id=b.booking_id) }}" class="btn btn-gold" style="padding: 0.3rem 0.6rem; font-size: 0.75rem;">
+                          Pay
+                        </a>
+                      {% endif %}
+
+                      {% if b.payment_status == 'Paid' %}
+                        <a href="{{ url_for('booking.view_invoice', booking_id=b.booking_id) }}" target="_blank" class="btn btn-outline" style="padding: 0.3rem 0.6rem; font-size: 0.75rem;">
+                          Invoice
+                        </a>
+                      {% endif %}
+
+                      {% if b.booking_status in ['Confirmed', 'Pending'] %}
+                        <form action="{{ url_for('booking.cancel_booking', booking_id=b.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to cancel booking {{ b.booking_id }}?');">
+                          <button type="submit" class="btn btn-danger" style="padding: 0.3rem 0.6rem; font-size: 0.75rem;">
+                            Cancel
+                          </button>
+                        </form>
+                      {% endif %}
+                    </div>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div style="text-align: center; padding: 3rem 1rem;">
+          <i class="fa-solid fa-calendar-xmark text-gold" style="font-size: 2.5rem; margin-bottom: 1rem;"></i>
+          <h3>No Reservations Found</h3>
+          <p style="color: var(--text-muted); margin-bottom: 1.5rem;">You haven't booked any luxury suites with us yet.</p>
+          <a href="{{ url_for('main.rooms') }}" class="btn btn-gold">Explore Rooms & Suites</a>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- TAB 2: PROFILE & SECURITY -->
+    <div id="tab-profile" class="tab-content" style="display: none;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+        
+        <!-- Profile Info Update -->
+        <form action="{{ url_for('auth.profile') }}" method="POST" class="auth-form" style="background: rgba(255, 255, 255, 0.02); padding: 1.5rem; border-radius: var(--radius-sm); border: 1px solid var(--border-light);">
+          <input type="hidden" name="action" value="update_info">
+          <h3 style="font-size: 1.2rem; color: var(--gold-light); margin-bottom: 1rem;">Personal Details</h3>
+
+          <div class="form-group">
+            <label for="prof_name">Full Name</label>
+            <input type="text" id="prof_name" name="name" value="{{ user.name }}" class="form-control" required>
+          </div>
+
+          <div class="form-group">
+            <label for="prof_email">Email Address</label>
+            <input type="email" id="prof_email" value="{{ user.email }}" class="form-control" disabled style="opacity: 0.7;">
+          </div>
+
+          <div class="form-group">
+            <label for="prof_phone">Phone Number</label>
+            <input type="text" id="prof_phone" name="phone" value="{{ user.phone }}" class="form-control" required>
+          </div>
+
+          <button type="submit" class="btn btn-gold" style="margin-top: 0.5rem;">Save Changes</button>
+        </form>
+
+        <!-- Password Change -->
+        <form action="{{ url_for('auth.profile') }}" method="POST" class="auth-form" style="background: rgba(255, 255, 255, 0.02); padding: 1.5rem; border-radius: var(--radius-sm); border: 1px solid var(--border-light);">
+          <input type="hidden" name="action" value="change_password">
+          <h3 style="font-size: 1.2rem; color: var(--gold-light); margin-bottom: 1rem;">Security & Password</h3>
+
+          <div class="form-group">
+            <label for="current_password">Current Password</label>
+            <input type="password" id="current_password" name="current_password" class="form-control" required>
+          </div>
+
+          <div class="form-group">
+            <label for="new_password">New Password</label>
+            <input type="password" id="new_password" name="new_password" class="form-control" minlength="6" required>
+          </div>
+
+          <div class="form-group">
+            <label for="confirm_password">Confirm New Password</label>
+            <input type="password" id="confirm_password" name="confirm_password" class="form-control" minlength="6" required>
+          </div>
+
+          <button type="submit" class="btn btn-outline" style="margin-top: 0.5rem;">Update Password</button>
+        </form>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

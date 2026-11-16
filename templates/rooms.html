@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}Rooms & Suites | Grand Royale Luxury Hotel{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 7rem; padding-bottom: 5rem;">
+
+  <!-- Header Banner -->
+  <div class="section-header" style="margin-bottom: 2.5rem;">
+    <p class="section-subtitle">Royal Living</p>
+    <h1 class="section-title">Accommodations & <span class="text-gold">Suites</span></h1>
+    <p style="color: var(--text-muted); max-width: 600px; margin: 0.5rem auto 0;">Explore our collection of hand-appointed suites, garden sanctuaries, and oceanfront villas.</p>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 280px 1fr; gap: 2rem; align-items: start;">
+    
+    <!-- Sidebar Filter Widget -->
+    <aside class="glass-card" style="padding: 1.5rem; position: sticky; top: 90px;">
+      <h3 style="font-size: 1.2rem; margin-bottom: 1.2rem; border-bottom: 1px solid var(--border-glass); padding-bottom: 0.75rem;">
+        <i class="fa-solid fa-sliders text-gold"></i> Filter Accommodations
+      </h3>
+
+      <form action="{{ url_for('main.rooms') }}" method="GET" style="display: flex; flex-direction: column; gap: 1.2rem;">
+        
+        <!-- Keyword Search -->
+        <div class="form-group">
+          <label for="q">Search Room</label>
+          <input type="text" id="q" name="q" value="{{ search_q }}" placeholder="e.g. Ocean, Penthouse" class="form-control">
+        </div>
+
+        <!-- Room Type -->
+        <div class="form-group">
+          <label for="type">Suite Type</label>
+          <select name="type" id="type" class="form-control">
+            <option value="">All Types</option>
+            {% for rtype in room_types %}
+              <option value="{{ rtype }}" {% if selected_type == rtype %}selected{% endif %}>{{ rtype }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Sort By -->
+        <div class="form-group">
+          <label for="sort">Sort By</label>
+          <select name="sort" id="sort" class="form-control">
+            <option value="recommended" {% if selected_sort == 'recommended' %}selected{% endif %}>Recommended</option>
+            <option value="price_low" {% if selected_sort == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+            <option value="price_high" {% if selected_sort == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+            <option value="rating" {% if selected_sort == 'rating' %}selected{% endif %}>Top Rated</option>
+          </select>
+        </div>
+
+        <!-- Capacity -->
+        <div class="form-group">
+          <label for="capacity">Min Capacity</label>
+          <select name="capacity" id="capacity" class="form-control">
+            <option value="">Any Capacity</option>
+            <option value="1" {% if capacity == 1 %}selected{% endif %}>1 Guest</option>
+            <option value="2" {% if capacity == 2 %}selected{% endif %}>2 Guests</option>
+            <option value="3" {% if capacity == 3 %}selected{% endif %}>3 Guests</option>
+            <option value="4" {% if capacity == 4 %}selected{% endif %}>4+ Guests</option>
+          </select>
+        </div>
+
+        <!-- Max Price -->
+        <div class="form-group">
+          <label for="max_price">Max Price Per Night ($)</label>
+          <input type="number" id="max_price" name="max_price" value="{{ max_price or '' }}" placeholder="e.g. 1000" class="form-control">
+        </div>
+
+        <!-- Amenities Checkboxes -->
+        <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
+          <label style="font-size: 0.8rem; text-transform: uppercase; color: var(--gold-light); font-weight: 600;">Amenities</label>
+
+          <label class="checkbox-label" style="font-size: 0.85rem;">
+            <input type="checkbox" name="wifi" value="1" {% if wifi == '1' %}checked{% endif %}> WiFi Included
+          </label>
+          <label class="checkbox-label" style="font-size: 0.85rem;">
+            <input type="checkbox" name="ac" value="1" {% if ac == '1' %}checked{% endif %}> Air Conditioning
+          </label>
+          <label class="checkbox-label" style="font-size: 0.85rem;">
+            <input type="checkbox" name="breakfast" value="1" {% if breakfast == '1' %}checked{% endif %}> Gourmet Breakfast
+          </label>
+          <label class="checkbox-label" style="font-size: 0.85rem;">
+            <input type="checkbox" name="tv" value="1" {% if tv == '1' %}checked{% endif %}> Smart TV
+          </label>
+        </div>
+
+        <button type="submit" class="btn btn-gold" style="width: 100%; margin-top: 0.5rem;">
+          Apply Filters
+        </button>
+        <a href="{{ url_for('main.rooms') }}" class="btn btn-outline" style="width: 100%; text-align: center;">
+          Reset All
+        </a>
+      </form>
+    </aside>
+
+    <!-- Rooms Results Grid -->
+    <main>
+      {% if rooms %}
+        <div class="rooms-grid">
+          {% for room in rooms %}
+            <div class="room-card">
+              <div class="room-img-wrapper">
+                <img src="{{ room.image }}" alt="{{ room.room_name }}" class="room-img" loading="lazy">
+                <span class="room-badge">{{ room.type }}</span>
+                <span class="room-status-badge status-{{ room.status | lower }}">{{ room.status }}</span>
+              </div>
+
+              <div class="room-content">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                  <h3 class="room-title">{{ room.room_name }}</h3>
+                  <span style="color: var(--gold-primary); font-weight: 600; font-size: 0.9rem;">
+                    <i class="fa-solid fa-star"></i> {{ room.rating }}
+                  </span>
+                </div>
+
+                <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1rem;">
+                  {{ room.description[:120] }}...
+                </p>
+
+                <div class="room-amenities-tags">
+                  <span class="tag"><i class="fa-solid fa-users"></i> {{ room.capacity }} Guests</span>
+                  {% if room.wifi %}<span class="tag"><i class="fa-solid fa-wifi"></i> WiFi</span>{% endif %}
+                  {% if room.ac %}<span class="tag"><i class="fa-solid fa-snowflake"></i> AC</span>{% endif %}
+                  {% if room.breakfast %}<span class="tag"><i class="fa-solid fa-utensils"></i> Breakfast</span>{% endif %}
+                  {% if room.tv %}<span class="tag"><i class="fa-solid fa-tv"></i> TV</span>{% endif %}
+                </div>
+
+                <div class="room-footer">
+                  <div class="room-price">
+                    <span class="price-amount">${{ "%.2f"|format(room.price) }}</span>
+                    <span class="price-period">per night</span>
+                  </div>
+                  <a href="{{ url_for('main.room_details', room_id=room.id) }}" class="btn btn-gold" style="padding: 0.5rem 1.1rem; font-size: 0.8rem;">
+                    Book Now
+                  </a>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="glass-card" style="text-align: center; padding: 4rem 2rem;">
+          <i class="fa-solid fa-bed" style="font-size: 3rem; color: var(--gold-primary); margin-bottom: 1rem;"></i>
+          <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">No Accommodations Found</h3>
+          <p style="color: var(--text-muted); margin-bottom: 1.5rem;">No rooms match your filter criteria. Try adjusting your price or room type preferences.</p>
+          <a href="{{ url_for('main.rooms') }}" class="btn btn-gold">Clear Filters</a>
+        </div>
+      {% endif %}
+    </main>
+
+  </div>
+</div>
+{% endblock %}

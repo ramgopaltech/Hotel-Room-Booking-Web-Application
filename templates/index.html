@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+
+{% block title %}Grand Royale | Luxury Hotel & Resort{% endblock %}
+
+{% block content %}
+
+<!-- Hero Section -->
+<section class="hero">
+  <div class="hero-overlay"></div>
+  <div class="container hero-content">
+    <p class="hero-subtitle"><i class="fa-solid fa-star"></i> Five Star World Luxury Winner <i class="fa-solid fa-star"></i></p>
+    <h1 class="hero-title">Experience Unmatched <span class="text-gold">Grandeur & Tranquility</span></h1>
+    <p class="hero-desc">Indulge in private ocean villas, panoramic penthouse suites, and personalized 24/7 butler service at Monaco's premier luxury sanctuary.</p>
+
+    <!-- Interactive Search Widget -->
+    <form action="{{ url_for('main.rooms') }}" method="GET" class="search-widget">
+      <div class="form-group">
+        <label for="search_check_in"><i class="fa-regular fa-calendar"></i> Check In</label>
+        <input type="date" id="search_check_in" name="check_in" class="form-control" required>
+      </div>
+
+      <div class="form-group">
+        <label for="search_check_out"><i class="fa-regular fa-calendar"></i> Check Out</label>
+        <input type="date" id="search_check_out" name="check_out" class="form-control" required>
+      </div>
+
+      <div class="form-group">
+        <label for="search_type"><i class="fa-solid fa-bed"></i> Suite Type</label>
+        <select name="type" id="search_type" class="form-control">
+          <option value="">All Suite Types</option>
+          {% for rtype in room_types %}
+            <option value="{{ rtype }}">{{ rtype }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="search_capacity"><i class="fa-solid fa-user-group"></i> Guests</label>
+        <select name="capacity" id="search_capacity" class="form-control">
+          <option value="1">1 Guest</option>
+          <option value="2" selected>2 Guests</option>
+          <option value="3">3 Guests</option>
+          <option value="4">4+ Guests</option>
+        </select>
+      </div>
+
+      <button type="submit" class="btn btn-gold" style="height: 48px;">
+        <i class="fa-solid fa-magnifying-glass"></i> Check Rooms
+      </button>
+    </form>
+  </div>
+</section>
+
+<!-- Featured Rooms Section -->
+<section class="py-section container">
+  <div class="section-header">
+    <p class="section-subtitle">Exquisite Accommodations</p>
+    <h2 class="section-title">Featured <span class="text-gold">Suites & Villas</span></h2>
+  </div>
+
+  <div class="rooms-grid">
+    {% for room in featured_rooms %}
+      <div class="room-card">
+        <div class="room-img-wrapper">
+          <img src="{{ room.image }}" alt="{{ room.room_name }}" class="room-img" loading="lazy">
+          <span class="room-badge">{{ room.type }}</span>
+          <span class="room-status-badge status-{{ room.status | lower }}">{{ room.status }}</span>
+        </div>
+
+        <div class="room-content">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+            <h3 class="room-title">{{ room.room_name }}</h3>
+            <span style="color: var(--gold-primary); font-weight: 600; font-size: 0.9rem;">
+              <i class="fa-solid fa-star"></i> {{ room.rating }}
+            </span>
+          </div>
+
+          <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1rem;">
+            {{ room.description[:110] }}...
+          </p>
+
+          <div class="room-amenities-tags">
+            <span class="tag"><i class="fa-solid fa-users"></i> {{ room.capacity }} Guests</span>
+            {% if room.wifi %}<span class="tag"><i class="fa-solid fa-wifi"></i> WiFi</span>{% endif %}
+            {% if room.ac %}<span class="tag"><i class="fa-solid fa-snowflake"></i> AC</span>{% endif %}
+            {% if room.breakfast %}<span class="tag"><i class="fa-solid fa-utensils"></i> Breakfast</span>{% endif %}
+          </div>
+
+          <div class="room-footer">
+            <div class="room-price">
+              <span class="price-amount">${{ "%.2f"|format(room.price) }}</span>
+              <span class="price-period">per night</span>
+            </div>
+            <a href="{{ url_for('main.room_details', room_id=room.id) }}" class="btn btn-outline" style="padding: 0.5rem 1rem;">
+              View Suite
+            </a>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+  <div style="text-align: center; margin-top: 3rem;">
+    <a href="{{ url_for('main.rooms') }}" class="btn btn-gold">
+      View All Accommodations <i class="fa-solid fa-arrow-right"></i>
+    </a>
+  </div>
+</section>
+
+<!-- About Section -->
+<section class="py-section" style="background: var(--bg-surface); border-y: 1px solid var(--border-glass);">
+  <div class="container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 3rem; align-items: center;">
+    <div>
+      <p class="section-subtitle">Heritage of Perfection</p>
+      <h2 class="section-title" style="margin-bottom: 1.5rem;">A Haven of <span class="text-gold">Sophistication</span></h2>
+      <p style="color: var(--text-muted); margin-bottom: 1.2rem;">
+        Nestled along the iconic French Riviera, Grand Royale represents over five decades of legendary hospitality. Every detail—from our hand-woven silk linens to our private yacht charters—is tailored for seamless perfection.
+      </p>
+      <p style="color: var(--text-muted); margin-bottom: 2rem;">
+        Whether relaxing in our subterranean thermal spa or savoring 3-star Michelin gastronomy, discover what true grandeur feels like.
+      </p>
+      
+      <div style="display: flex; gap: 2rem;">
+        <div>
+          <h3 style="font-size: 2.2rem; color: var(--gold-primary); font-family: var(--font-heading);">120+</h3>
+          <p style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase;">Luxury Suites</p>
+        </div>
+        <div>
+          <h3 style="font-size: 2.2rem; color: var(--gold-primary); font-family: var(--font-heading);">99.8%</h3>
+          <p style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase;">Guest Satisfaction</p>
+        </div>
+        <div>
+          <h3 style="font-size: 2.2rem; color: var(--gold-primary); font-family: var(--font-heading);">25+</h3>
+          <p style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase;">Global Awards</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="glass-card" style="padding: 1rem; position: relative;">
+      <img src="/static/images/about_hotel.jpg" alt="Grand Royale Hotel Entrance" style="width: 100%; border-radius: var(--radius-sm); object-fit: cover;" loading="lazy">
+    </div>
+  </div>
+</section>
+
+<!-- Facilities Section -->
+<section class="py-section container">
+  <div class="section-header">
+    <p class="section-subtitle">World-Class Amenities</p>
+    <h2 class="section-title">Exclusive <span class="text-gold">Hotel Facilities</span></h2>
+  </div>
+
+  <div class="facilities-grid">
+    <div class="glass-card facility-card">
+      <i class="fa-solid fa-water-ladder facility-icon"></i>
+      <h3 class="facility-title">Infinity Sky Pool</h3>
+      <p class="facility-desc">Temperature-controlled rooftop pool with panoramic Mediterranean coastline vistas.</p>
+    </div>
+
+    <div class="glass-card facility-card">
+      <i class="fa-solid fa-spa facility-icon"></i>
+      <h3 class="facility-title">Bespoke Wellness Spa</h3>
+      <p class="facility-desc">Hydrotherapy, Finnish saunas, and holistic organic botanical treatments.</p>
+    </div>
+
+    <div class="glass-card facility-card">
+      <i class="fa-solid fa-utensils facility-icon"></i>
+      <h3 class="facility-title">Michelin Dining</h3>
+      <p class="facility-desc">Exquisite French-Mediterranean cuisine curated by world-renowned Master Chefs.</p>
+    </div>
+
+    <div class="glass-card facility-card">
+      <i class="fa-solid fa-bell-concierge facility-icon"></i>
+      <h3 class="facility-title">24/7 Royal Butler</h3>
+      <p class="facility-desc">Private concierge service for unpacking, private dining, and bespoke itineraries.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Customer Reviews Section -->
+<section class="py-section" style="background: var(--bg-surface);">
+  <div class="container">
+    <div class="section-header">
+      <p class="section-subtitle">Testimonials</p>
+      <h2 class="section-title">Words From Our <span class="text-gold">Distinguished Guests</span></h2>
+    </div>
+
+    <div class="reviews-grid">
+      {% for review in reviews %}
+        <div class="review-card">
+          <div class="review-rating">
+            {% for _ in range(review.rating) %}
+              <i class="fa-solid fa-star"></i>
+            {% endfor %}
+          </div>
+          <p class="review-text">"{{ review.comment }}"</p>
+          <div class="review-user">
+            <div class="avatar-circle">
+              {{ review.user.name[0] }}
+            </div>
+            <div>
+              <h4 style="font-size: 0.95rem; font-family: var(--font-body);">{{ review.user.name }}</h4>
+              <p style="font-size: 0.75rem; color: var(--text-muted);">Verified Royal Guest</p>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Set minimum date for search check-in to today
+  document.addEventListener('DOMContentLoaded', () => {
+    const today = new Date().toISOString().split('T')[0];
+    const checkIn = document.getElementById('search_check_in');
+    const checkOut = document.getElementById('search_check_out');
+    if (checkIn) checkIn.min = today;
+
+    if (checkIn && checkOut) {
+      checkIn.addEventListener('change', () => {
+        checkOut.min = checkIn.value;
+      });
+    }
+  });
+</script>
+{% endblock %}

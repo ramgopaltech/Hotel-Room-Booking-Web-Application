@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Grand Royale - Ultimate Luxury Hotel & Resort. Book presidential suites, oceanfront villas, and executive rooms with world-class amenities.">
+  <meta name="keywords" content="Luxury Hotel, Hotel Booking, Presidential Suite, Ocean Villa, Five Star Hotel, Grand Royale">
+  <title>{% block title %}Grand Royale | Luxury Hotel & Resort{% endblock %}</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+  <!-- Flash Messages Toast Container -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="toast-container">
+        {% for category, message in messages %}
+          <div class="toast {{ category }}">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              {% if category == 'success' %}
+                <i class="fa-solid fa-circle-check" style="color: var(--success)"></i>
+              {% elif category == 'danger' %}
+                <i class="fa-solid fa-triangle-exclamation" style="color: var(--danger)"></i>
+              {% else %}
+                <i class="fa-solid fa-circle-info" style="color: var(--gold-primary)"></i>
+              {% endif %}
+              <span>{{ message }}</span>
+            </div>
+            <button class="toast-close">&times;</button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- Glass Navigation Header -->
+  <header class="navbar">
+    <div class="container nav-container">
+      <a href="{{ url_for('main.index') }}" class="logo">
+        <i class="fa-solid fa-crown logo-icon"></i>
+        <span class="logo-text">GRAND ROYALE</span>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="{{ url_for('main.index') }}" class="nav-link {% if request.endpoint == 'main.index' %}active{% endif %}">Home</a></li>
+        <li><a href="{{ url_for('main.rooms') }}" class="nav-link {% if request.endpoint == 'main.rooms' %}active{% endif %}">Rooms & Suites</a></li>
+        <li><a href="{{ url_for('main.contact') }}" class="nav-link {% if request.endpoint == 'main.contact' %}active{% endif %}">Contact</a></li>
+        
+        {% if session.get('is_admin') %}
+          <li><a href="{{ url_for('admin.dashboard') }}" class="nav-link text-gold" style="font-weight: 700;">Admin Panel</a></li>
+        {% endif %}
+      </ul>
+
+      <div class="nav-actions">
+        {% if session.get('user_id') %}
+          <a href="{{ url_for('booking.dashboard') }}" class="btn btn-outline" style="padding: 0.5rem 1rem;">
+            <i class="fa-solid fa-user-gear"></i> {{ session.get('user_name') }}
+          </a>
+          <a href="{{ url_for('auth.logout') }}" class="btn btn-gold" style="padding: 0.5rem 1rem;">Logout</a>
+        {% else %}
+          <a href="{{ url_for('auth.login') }}" class="btn btn-outline" style="padding: 0.5rem 1rem;">Login</a>
+          <a href="{{ url_for('auth.register') }}" class="btn btn-gold" style="padding: 0.5rem 1.2rem;">Book Now</a>
+        {% endif %}
+
+        <button class="mobile-toggle" aria-label="Toggle navigation">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Page Main Content -->
+  <main style="flex: 1;">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Luxury Modern Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="{{ url_for('main.index') }}" class="logo">
+            <i class="fa-solid fa-crown logo-icon"></i>
+            <span class="logo-text">GRAND ROYALE</span>
+          </a>
+          <p>Where royal elegance meets world-class luxury. Experience bespoke hospitality, Michelin-inspired dining, and serene coastal views.</p>
+        </div>
+
+        <div>
+          <h4 class="footer-title">Quick Links</h4>
+          <ul class="footer-links">
+            <li><a href="{{ url_for('main.index') }}">Home</a></li>
+            <li><a href="{{ url_for('main.rooms') }}">Rooms & Suites</a></li>
+            <li><a href="{{ url_for('main.contact') }}">Contact Us</a></li>
+            <li><a href="{{ url_for('auth.login') }}">Guest Login</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="footer-title">Facilities</h4>
+          <ul class="footer-links">
+            <li><a href="#">Infinity Sky Pool</a></li>
+            <li><a href="#">Bespoke Spa & Wellness</a></li>
+            <li><a href="#">Michelin Star Restaurant</a></li>
+            <li><a href="#">Helipad & Private Transfer</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="footer-title">Contact & Support</h4>
+          <ul class="footer-links">
+            <li><i class="fa-solid fa-location-dot text-gold"></i> 777 Ocean Boulevard, Monaco</li>
+            <li><i class="fa-solid fa-phone text-gold"></i> +1 800 555 ROYALE</li>
+            <li><i class="fa-solid fa-envelope text-gold"></i> concierge@grandroyale.com</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>&copy; {{ now.year }} Grand Royale Hotel & Resort. All rights reserved. Crafted with excellence.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Core JavaScript -->
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/booking.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

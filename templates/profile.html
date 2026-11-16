@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile | Grand Royale Luxury Hotel{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 7rem; padding-bottom: 5rem; max-width: 800px;">
+  
+  <div class="section-header" style="margin-bottom: 2rem;">
+    <p class="section-subtitle">Account Preferences</p>
+    <h1 class="section-title">Guest <span class="text-gold">Profile</span></h1>
+  </div>
+
+  <div class="glass-card" style="padding: 2.5rem;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+      
+      <!-- Personal Information -->
+      <form action="{{ url_for('auth.profile') }}" method="POST" class="auth-form">
+        <input type="hidden" name="action" value="update_info">
+        <h3 style="font-size: 1.2rem; color: var(--gold-light); margin-bottom: 1rem;">Profile Details</h3>
+
+        <div class="form-group">
+          <label for="name">Full Name</label>
+          <input type="text" id="name" name="name" value="{{ user.name }}" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" value="{{ user.email }}" class="form-control" disabled style="opacity: 0.7;">
+        </div>
+
+        <div class="form-group">
+          <label for="phone">Phone Number</label>
+          <input type="text" id="phone" name="phone" value="{{ user.phone }}" class="form-control" required>
+        </div>
+
+        <button type="submit" class="btn btn-gold" style="margin-top: 0.5rem;">Save Changes</button>
+      </form>
+
+      <!-- Change Password -->
+      <form action="{{ url_for('auth.profile') }}" method="POST" class="auth-form">
+        <input type="hidden" name="action" value="change_password">
+        <h3 style="font-size: 1.2rem; color: var(--gold-light); margin-bottom: 1rem;">Security Settings</h3>
+
+        <div class="form-group">
+          <label for="current_password">Current Password</label>
+          <input type="password" id="current_password" name="current_password" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+          <label for="new_password">New Password</label>
+          <input type="password" id="new_password" name="new_password" class="form-control" minlength="6" required>
+        </div>
+
+        <div class="form-group">
+          <label for="confirm_password">Confirm New Password</label>
+          <input type="password" id="confirm_password" name="confirm_password" class="form-control" minlength="6" required>
+        </div>
+
+        <button type="submit" class="btn btn-outline" style="margin-top: 0.5rem;">Update Password</button>
+      </form>
+
+    </div>
+  </div>
+
+</div>
+{% endblock %}

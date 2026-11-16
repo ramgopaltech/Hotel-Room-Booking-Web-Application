@@ -1,0 +1,443 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Control Center | Grand Royale Luxury Hotel{% endblock %}
+
+{% block content %}
+<div class="admin-layout">
+  
+  <!-- Sidebar -->
+  <aside class="admin-sidebar">
+    <div style="padding: 0 0.5rem 1.5rem; border-bottom: 1px solid var(--border-light); margin-bottom: 1rem;">
+      <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--gold-primary); letter-spacing: 1px; font-weight: 700;">Administrator</span>
+      <h3 style="font-size: 1.1rem; color: #fff;">Control Center</h3>
+    </div>
+
+    <a href="#" class="sidebar-link active" data-tab="admin-overview">
+      <i class="fa-solid fa-chart-pie"></i> Overview Metrics
+    </a>
+    <a href="#" class="sidebar-link" data-tab="admin-rooms">
+      <i class="fa-solid fa-bed"></i> Room Management
+    </a>
+    <a href="#" class="sidebar-link" data-tab="admin-bookings">
+      <i class="fa-solid fa-book-bookmark"></i> Booking Management
+    </a>
+    <a href="#" class="sidebar-link" data-tab="admin-users">
+      <i class="fa-solid fa-users"></i> Guest Directory
+    </a>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="admin-main">
+    
+    <!-- TAB 1: OVERVIEW METRICS -->
+    <div id="admin-overview" class="tab-content" style="display: block;">
+      <div class="admin-header">
+        <div>
+          <h1 class="admin-title">System <span class="text-gold">Overview</span></h1>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">Real-time performance metrics and revenue summary</p>
+        </div>
+
+        <button class="btn btn-gold" data-modal-target="modal-add-room">
+          <i class="fa-solid fa-plus"></i> Add New Suite
+        </button>
+      </div>
+
+      <!-- Metrics Cards -->
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-icon"><i class="fa-solid fa-users"></i></div>
+          <div class="metric-info">
+            <span class="metric-value">{{ total_users }}</span>
+            <span class="metric-label">Registered Guests</span>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-icon"><i class="fa-solid fa-door-open"></i></div>
+          <div class="metric-info">
+            <span class="metric-value">{{ total_rooms }}</span>
+            <span class="metric-label">Total Suites</span>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-icon"><i class="fa-solid fa-calendar-day"></i></div>
+          <div class="metric-info">
+            <span class="metric-value">{{ todays_bookings }}</span>
+            <span class="metric-label">Today's Bookings</span>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-icon"><i class="fa-solid fa-vault text-gold"></i></div>
+          <div class="metric-info">
+            <span class="metric-value">${{ "%.2f"|format(revenue) }}</span>
+            <span class="metric-label">Total Revenue</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Bookings Table -->
+      <h3 style="font-size: 1.3rem; margin-bottom: 1rem; color: var(--gold-light);">Recent Bookings</h3>
+      <div class="table-container">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Ref ID</th>
+              <th>Guest Name</th>
+              <th>Suite</th>
+              <th>Dates</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for b in bookings[:5] %}
+              <tr>
+                <td style="font-weight: 700; color: var(--gold-primary);">{{ b.booking_id }}</td>
+                <td>{{ b.user.name }}</td>
+                <td>{{ b.room.room_name }} (#{{ b.room.room_number }})</td>
+                <td>{{ b.check_in.strftime('%m/%d') }} - {{ b.check_out.strftime('%m/%d/%Y') }}</td>
+                <td style="font-weight: 600;">${{ "%.2f"|format(b.total_price) }}</td>
+                <td>
+                  <span class="badge badge-{% if b.booking_status == 'Confirmed' %}success{% elif b.booking_status == 'Cancelled' %}danger{% else %}warning{% endif %}">
+                    {{ b.booking_status }}
+                  </span>
+                </td>
+                <td>
+                  <a href="{{ url_for('booking.view_invoice', booking_id=b.booking_id) }}" target="_blank" class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">
+                    Invoice
+                  </a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 2: ROOM MANAGEMENT -->
+    <div id="admin-rooms" class="tab-content" style="display: none;">
+      <div class="admin-header">
+        <div>
+          <h1 class="admin-title">Manage <span class="text-gold">Suites & Rooms</span></h1>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">Add, edit, toggle availability or upload images for rooms</p>
+        </div>
+
+        <button class="btn btn-gold" data-modal-target="modal-add-room">
+          <i class="fa-solid fa-plus"></i> Add New Suite
+        </button>
+      </div>
+
+      <div style="margin-bottom: 1rem;">
+        <input type="text" class="form-control admin-search-input" data-table-target="table-rooms" placeholder="Search room by name or number..." style="max-width: 350px;">
+      </div>
+
+      <div class="table-container">
+        <table class="admin-table" id="table-rooms">
+          <thead>
+            <tr>
+              <th>Image</th>
+              <th>Suite Name</th>
+              <th>Room #</th>
+              <th>Type</th>
+              <th>Capacity</th>
+              <th>Price/Night</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in rooms %}
+              <tr>
+                <td>
+                  <img src="{{ r.image }}" alt="{{ r.room_name }}" style="width: 50px; height: 38px; object-fit: cover; border-radius: 4px;">
+                </td>
+                <td style="font-weight: 600; color: #fff;">{{ r.room_name }}</td>
+                <td>#{{ r.room_number }}</td>
+                <td><span class="tag" style="display: inline-block;">{{ r.type }}</span></td>
+                <td>{{ r.capacity }} Guests</td>
+                <td style="font-weight: 600; color: var(--gold-primary);">${{ "%.2f"|format(r.price) }}</td>
+                <td>
+                  <span class="badge badge-{% if r.status == 'Available' %}success{% else %}danger{% endif %}">
+                    {{ r.status }}
+                  </span>
+                </td>
+                <td>
+                  <div style="display: flex; gap: 0.4rem;">
+                    <button class="btn btn-outline" data-modal-target="modal-edit-room-{{ r.id }}" style="padding: 0.3rem 0.6rem; font-size: 0.75rem;">
+                      Edit
+                    </button>
+                    <form action="{{ url_for('admin.delete_room', room_id=r.id) }}" method="POST" onsubmit="return confirm('Delete suite {{ r.room_name }}?');">
+                      <button type="submit" class="btn btn-danger" style="padding: 0.3rem 0.6rem; font-size: 0.75rem;">
+                        Delete
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- EDIT ROOM MODAL FOR EACH ROOM -->
+              <div id="modal-edit-room-{{ r.id }}" class="modal">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h3 style="font-size: 1.2rem; color: var(--gold-light);">Edit Suite #{{ r.room_number }}</h3>
+                    <button class="modal-close">&times;</button>
+                  </div>
+                  
+                  <form action="{{ url_for('admin.edit_room', room_id=r.id) }}" method="POST" enctype="multipart/form-data" class="auth-form">
+                    <div class="form-group">
+                      <label>Suite Name</label>
+                      <input type="text" name="room_name" value="{{ r.room_name }}" class="form-control" required>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                      <div class="form-group">
+                        <label>Room Number</label>
+                        <input type="text" name="room_number" value="{{ r.room_number }}" class="form-control" required>
+                      </div>
+                      <div class="form-group">
+                        <label>Suite Type</label>
+                        <select name="type" class="form-control">
+                          <option value="Penthouse" {% if r.type == 'Penthouse' %}selected{% endif %}>Penthouse</option>
+                          <option value="Suite" {% if r.type == 'Suite' %}selected{% endif %}>Suite</option>
+                          <option value="Executive" {% if r.type == 'Executive' %}selected{% endif %}>Executive</option>
+                          <option value="Deluxe" {% if r.type == 'Deluxe' %}selected{% endif %}>Deluxe</option>
+                          <option value="Standard" {% if r.type == 'Standard' %}selected{% endif %}>Standard</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                      <div class="form-group">
+                        <label>Price Per Night ($)</label>
+                        <input type="number" step="0.01" name="price" value="{{ r.price }}" class="form-control" required>
+                      </div>
+                      <div class="form-group">
+                        <label>Capacity (Guests)</label>
+                        <input type="number" name="capacity" value="{{ r.capacity }}" class="form-control" required>
+                      </div>
+                    </div>
+
+                    <div class="form-group">
+                      <label>Description</label>
+                      <textarea name="description" rows="3" class="form-control" required>{{ r.description }}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                      <label>Status</label>
+                      <select name="status" class="form-control">
+                        <option value="Available" {% if r.status == 'Available' %}selected{% endif %}>Available</option>
+                        <option value="Maintenance" {% if r.status == 'Maintenance' %}selected{% endif %}>Maintenance</option>
+                      </select>
+                    </div>
+
+                    <div style="display: flex; gap: 1rem; margin: 0.5rem 0;">
+                      <label class="checkbox-label"><input type="checkbox" name="wifi" {% if r.wifi %}checked{% endif %}> WiFi</label>
+                      <label class="checkbox-label"><input type="checkbox" name="ac" {% if r.ac %}checked{% endif %}> AC</label>
+                      <label class="checkbox-label"><input type="checkbox" name="breakfast" {% if r.breakfast %}checked{% endif %}> Breakfast</label>
+                      <label class="checkbox-label"><input type="checkbox" name="tv" {% if r.tv %}checked{% endif %}> TV</label>
+                    </div>
+
+                    <div class="form-group">
+                      <label>Change Main Image (Optional)</label>
+                      <input type="file" name="image" class="form-control" accept="image/*">
+                    </div>
+
+                    <button type="submit" class="btn btn-gold" style="margin-top: 1rem;">Save Suite Changes</button>
+                  </form>
+                </div>
+              </div>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 3: BOOKING MANAGEMENT -->
+    <div id="admin-bookings" class="tab-content" style="display: none;">
+      <div class="admin-header">
+        <div>
+          <h1 class="admin-title">Manage <span class="text-gold">Reservations</span></h1>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">Approve, reject, or update status of guest bookings</p>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 1rem;">
+        <input type="text" class="form-control admin-search-input" data-table-target="table-admin-bookings" placeholder="Filter by Ref ID, guest name, or suite..." style="max-width: 350px;">
+      </div>
+
+      <div class="table-container">
+        <table class="admin-table" id="table-admin-bookings">
+          <thead>
+            <tr>
+              <th>Booking Ref</th>
+              <th>Guest Name</th>
+              <th>Suite #</th>
+              <th>Check In</th>
+              <th>Check Out</th>
+              <th>Guests</th>
+              <th>Total Amount</th>
+              <th>Booking Status</th>
+              <th>Payment</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for b in bookings %}
+              <tr>
+                <td style="font-weight: 700; color: var(--gold-primary);">{{ b.booking_id }}</td>
+                <td>{{ b.user.name }}<br><small style="color: var(--text-muted);">{{ b.user.email }}</small></td>
+                <td>#{{ b.room.room_number }}</td>
+                <td>{{ b.check_in.strftime('%Y-%m-%d') }}</td>
+                <td>{{ b.check_out.strftime('%Y-%m-%d') }}</td>
+                <td>{{ b.guests }}</td>
+                <td style="font-weight: 600;">${{ "%.2f"|format(b.total_price) }}</td>
+                <td>
+                  <span class="badge badge-{% if b.booking_status == 'Confirmed' %}success{% elif b.booking_status == 'Cancelled' %}danger{% else %}warning{% endif %}">
+                    {{ b.booking_status }}
+                  </span>
+                </td>
+                <td>
+                  <span class="badge badge-{% if b.payment_status == 'Paid' %}success{% elif b.payment_status == 'Refunded' %}warning{% else %}danger{% endif %}">
+                    {{ b.payment_status }}
+                  </span>
+                </td>
+                <td>
+                  <form action="{{ url_for('admin.update_booking_status', booking_id=b.id) }}" method="POST" style="display: flex; gap: 0.3rem;">
+                    {% if b.booking_status != 'Confirmed' %}
+                      <input type="hidden" name="status" value="Confirmed">
+                      <button type="submit" class="btn btn-success" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">
+                        Approve
+                      </button>
+                    {% else %}
+                      <input type="hidden" name="status" value="Cancelled">
+                      <button type="submit" class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">
+                        Reject
+                      </button>
+                    {% endif %}
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 4: GUEST DIRECTORY -->
+    <div id="admin-users" class="tab-content" style="display: none;">
+      <div class="admin-header">
+        <div>
+          <h1 class="admin-title">Guest <span class="text-gold">Directory</span></h1>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">Registered customer accounts and contacts</p>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Full Name</th>
+              <th>Email Address</th>
+              <th>Phone Number</th>
+              <th>Role</th>
+              <th>Registered Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for u in users %}
+              <tr>
+                <td>#{{ u.id }}</td>
+                <td style="font-weight: 600; color: #fff;">{{ u.name }}</td>
+                <td>{{ u.email }}</td>
+                <td>{{ u.phone }}</td>
+                <td>
+                  <span class="badge badge-{% if u.is_admin %}warning{% else %}info{% endif %}">
+                    {% if u.is_admin %}Administrator{% else %}Guest Customer{% endif %}
+                  </span>
+                </td>
+                <td>{{ u.created_at.strftime('%Y-%m-%d') }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+</div>
+
+<!-- ADD NEW ROOM MODAL -->
+<div id="modal-add-room" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 style="font-size: 1.2rem; color: var(--gold-light);">Add New Royal Suite</h3>
+      <button class="modal-close">&times;</button>
+    </div>
+    
+    <form action="{{ url_for('admin.add_room') }}" method="POST" enctype="multipart/form-data" class="auth-form">
+      <div class="form-group">
+        <label>Suite Name</label>
+        <input type="text" name="room_name" placeholder="e.g. Imperial Penthouse" class="form-control" required>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+          <label>Room Number</label>
+          <input type="text" name="room_number" placeholder="401" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label>Suite Type</label>
+          <select name="type" class="form-control">
+            <option value="Penthouse">Penthouse</option>
+            <option value="Suite" selected>Suite</option>
+            <option value="Executive">Executive</option>
+            <option value="Deluxe">Deluxe</option>
+            <option value="Standard">Standard</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+          <label>Price Per Night ($)</label>
+          <input type="number" step="0.01" name="price" placeholder="450.00" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label>Capacity (Guests)</label>
+          <input type="number" name="capacity" value="2" class="form-control" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Description</label>
+        <textarea name="description" rows="3" placeholder="Describe room view, size, and luxury features..." class="form-control" required></textarea>
+      </div>
+
+      <div style="display: flex; gap: 1rem; margin: 0.5rem 0;">
+        <label class="checkbox-label"><input type="checkbox" name="wifi" checked> WiFi</label>
+        <label class="checkbox-label"><input type="checkbox" name="ac" checked> AC</label>
+        <label class="checkbox-label"><input type="checkbox" name="breakfast"> Breakfast</label>
+        <label class="checkbox-label"><input type="checkbox" name="tv" checked> TV</label>
+      </div>
+
+      <div class="form-group">
+        <label>Primary Suite Image</label>
+        <input type="file" name="image" class="form-control" accept="image/*" required>
+      </div>
+
+      <div class="form-group">
+        <label>Additional Gallery Images (Multiple)</label>
+        <input type="file" name="additional_images" class="form-control" accept="image/*" multiple>
+      </div>
+
+      <button type="submit" class="btn btn-gold" style="margin-top: 1rem;">Create Suite</button>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

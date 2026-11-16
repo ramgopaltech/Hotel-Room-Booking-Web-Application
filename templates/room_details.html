@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block title %}{{ room.room_name }} | Grand Royale Luxury Hotel{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 7rem; padding-bottom: 5rem;">
+
+  <!-- Breadcrumb -->
+  <div style="margin-bottom: 1.5rem; font-size: 0.9rem; color: var(--text-muted);">
+    <a href="{{ url_for('main.index') }}" style="color: var(--text-muted); text-decoration: none;">Home</a> / 
+    <a href="{{ url_for('main.rooms') }}" style="color: var(--text-muted); text-decoration: none;">Rooms</a> / 
+    <span class="text-gold">{{ room.room_name }}</span>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 1fr 380px; gap: 2.5rem; align-items: start;">
+    
+    <!-- Left Column: Gallery & Details -->
+    <div>
+      <!-- Main Image Display -->
+      <div style="border-radius: var(--radius-md); overflow: hidden; height: 420px; position: relative; margin-bottom: 1rem; border: 1px solid var(--border-glass);">
+        <img id="main_room_image" src="{{ room.image }}" alt="{{ room.room_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+        <span class="room-badge" style="position: absolute; top: 1.2rem; right: 1.2rem;">{{ room.type }}</span>
+      </div>
+
+      <!-- Additional Gallery Thumbnails -->
+      {% if room.additional_images %}
+        <div style="display: flex; gap: 1rem; margin-bottom: 2rem; overflow-x: auto; padding-bottom: 0.5rem;">
+          <img src="{{ room.image }}" class="gallery-thumb active" style="width: 100px; height: 75px; object-fit: cover; border-radius: var(--radius-sm); cursor: pointer; border: 2px solid var(--gold-primary);">
+          {% for add_img in room.additional_images %}
+            <img src="{{ add_img.image_url }}" class="gallery-thumb" style="width: 100px; height: 75px; object-fit: cover; border-radius: var(--radius-sm); cursor: pointer; border: 2px solid transparent;">
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <!-- Room Overview -->
+      <div class="glass-card" style="margin-bottom: 2rem; padding: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap;">
+          <h1 style="font-size: 2rem;">{{ room.room_name }}</h1>
+          <span style="font-size: 1.2rem; color: var(--gold-primary); font-weight: 700;">
+            <i class="fa-solid fa-star"></i> {{ room.rating }} / 5.0
+          </span>
+        </div>
+
+        <p style="font-size: 1rem; color: var(--text-muted); line-height: 1.7; margin-bottom: 2rem;">
+          {{ room.description }}
+        </p>
+
+        <!-- Room Specs & Amenities Grid -->
+        <h3 style="font-size: 1.2rem; margin-bottom: 1rem; color: var(--gold-light);">Suite Features & Amenities</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+          <div class="tag" style="padding: 0.75rem 1rem; font-size: 0.9rem;">
+            <i class="fa-solid fa-users text-gold"></i> Capacity: {{ room.capacity }} Guests
+          </div>
+          <div class="tag" style="padding: 0.75rem 1rem; font-size: 0.9rem;">
+            <i class="fa-solid fa-door-closed text-gold"></i> Suite #{{ room.room_number }}
+          </div>
+          <div class="tag" style="padding: 0.75rem 1rem; font-size: 0.9rem;">
+            <i class="fa-solid fa-bed text-gold"></i> {{ room.type }} Suite
+          </div>
+          {% if room.wifi %}
+            <div class="tag" style="padding: 0.75rem 1rem; font-size: 0.9rem;">
+              <i class="fa-solid fa-wifi text-gold"></i> High Speed WiFi
+            </div>
+          {% endif %}
+          {% if room.ac %}
+            <div class="tag" style="padding: 0.75rem 1rem; font-size: 0.9rem;">
+              <i class="fa-solid fa-snowflake text-gold"></i> Climate Control AC
+            </div>
+          {% endif %}
+          {% if room.breakfast %}
+            <div class="tag" style="padding: 0.75rem 1rem; font-size: 0.9rem;">
+              <i class="fa-solid fa-utensils text-gold"></i> Free Breakfast
+            </div>
+          {% endif %}
+          {% if room.tv %}
+            <div class="tag" style="padding: 0.75rem 1rem; font-size: 0.9rem;">
+              <i class="fa-solid fa-tv text-gold"></i> 65" 4K Smart TV
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Room Rules -->
+        <h3 style="font-size: 1.2rem; margin-bottom: 1rem; color: var(--gold-light);">Hotel Policies & House Rules</h3>
+        <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.6rem; color: var(--text-muted); font-size: 0.9rem;">
+          <li><i class="fa-solid fa-clock text-gold"></i> Check-in time: 3:00 PM | Check-out time: 11:00 AM</li>
+          <li><i class="fa-solid fa-smoking-ban text-gold"></i> Non-smoking throughout all indoor suites</li>
+          <li><i class="fa-solid fa-paw text-gold"></i> Pets allowed upon prior concierge request</li>
+          <li><i class="fa-solid fa-shield-halved text-gold"></i> 24/7 Monitored Luxury Security & Private Safe</li>
+        </ul>
+      </div>
+
+      <!-- Guest Reviews Section -->
+      <div class="glass-card" style="padding: 2rem;">
+        <h3 style="font-size: 1.3rem; margin-bottom: 1.5rem; color: var(--gold-light);">Guest Experience Reviews</h3>
+
+        {% if reviews %}
+          <div style="display: flex; flex-direction: column; gap: 1.2rem; margin-bottom: 2rem;">
+            {% for r in reviews %}
+              <div style="border-bottom: 1px solid var(--border-light); padding-bottom: 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+                  <span style="font-weight: 600; color: #fff;">{{ r.user.name }}</span>
+                  <span style="color: var(--gold-primary); font-size: 0.85rem;">
+                    {% for _ in range(r.rating) %}<i class="fa-solid fa-star"></i>{% endfor %}
+                  </span>
+                </div>
+                <p style="font-size: 0.9rem; color: var(--text-muted);">{{ r.comment }}</p>
+                <span style="font-size: 0.75rem; color: #64748b; margin-top: 0.3rem; display: block;">
+                  {{ r.created_at.strftime('%B %d, %Y') }}
+                </span>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p style="color: var(--text-muted); margin-bottom: 2rem;">No reviews yet for this suite. Be the first to share your experience!</p>
+        {% endif %}
+
+        <!-- Submit Review Form -->
+        {% if session.get('user_id') %}
+          <form action="{{ url_for('api.api_add_review') }}" method="POST" style="border-top: 1px solid var(--border-glass); padding-top: 1.5rem;">
+            <input type="hidden" name="room_id" value="{{ room.id }}">
+            <h4 style="font-size: 1rem; margin-bottom: 1rem;">Leave a Review</h4>
+            <div class="form-group" style="margin-bottom: 1rem;">
+              <label for="rating">Rating</label>
+              <select name="rating" id="rating" class="form-control">
+                <option value="5">5 Stars - Exceptional</option>
+                <option value="4">4 Stars - Excellent</option>
+                <option value="3">3 Stars - Good</option>
+                <option value="2">2 Stars - Fair</option>
+                <option value="1">1 Star - Poor</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 1rem;">
+              <label for="comment">Your Comment</label>
+              <textarea name="comment" id="comment" rows="3" class="form-control" placeholder="Describe your stay..." required></textarea>
+            </div>
+            <button type="submit" class="btn btn-outline" style="padding: 0.6rem 1.2rem;">Submit Review</button>
+          </form>
+        {% endif %}
+      </div>
+
+    </div>
+
+    <!-- Right Column: Interactive Booking Widget -->
+    <div class="glass-card" style="padding: 2rem; position: sticky; top: 90px; border-color: var(--gold-primary);">
+      
+      <div style="margin-bottom: 1.5rem; text-align: center; border-bottom: 1px solid var(--border-glass); padding-bottom: 1rem;">
+        <span style="font-size: 2.2rem; font-weight: 700; color: var(--gold-primary); font-family: var(--font-heading);" id="price_per_night">
+          ${{ "%.2f"|format(room.price) }}
+        </span>
+        <span style="color: var(--text-muted); font-size: 0.9rem;">/ night</span>
+      </div>
+
+      <form action="{{ url_for('booking.initiate_booking', room_id=room.id) }}" method="POST" id="booking_form">
+        <input type="hidden" id="room_id" value="{{ room.id }}">
+
+        <div class="form-group" style="margin-bottom: 1rem;">
+          <label for="check_in"><i class="fa-regular fa-calendar"></i> Check In Date</label>
+          <input type="date" id="check_in" name="check_in" min="{{ today_str }}" class="form-control" required>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 1rem;">
+          <label for="check_out"><i class="fa-regular fa-calendar"></i> Check Out Date</label>
+          <input type="date" id="check_out" name="check_out" class="form-control" required>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 1.5rem;">
+          <label for="guests"><i class="fa-solid fa-user-group"></i> Guests</label>
+          <select name="guests" id="guests" class="form-control">
+            {% for g in range(1, room.capacity + 1) %}
+              <option value="{{ g }}">{{ g }} Guest{% if g > 1 %}s{% endif %}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Live Price Calculation Box -->
+        <div style="background: rgba(0, 0, 0, 0.4); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 1.5rem; border: 1px solid var(--border-light);">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.9rem;">
+            <span>Total Duration:</span>
+            <span><strong id="nights_count">1</strong> Night(s)</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.9rem;">
+            <span>Availability Status:</span>
+            <span id="availability_badge" class="badge badge-info">Select Dates</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; border-top: 1px solid var(--border-light); padding-top: 0.75rem; font-size: 1.1rem; font-weight: 700; color: #fff;">
+            <span>Estimated Total:</span>
+            <span class="text-gold" id="total_price_display">${{ "%.2f"|format(room.price) }}</span>
+          </div>
+        </div>
+
+        {% if session.get('user_id') %}
+          <button type="submit" id="book_submit_btn" class="btn btn-gold" style="width: 100%; height: 50px;">
+            Reserve Suite <i class="fa-solid fa-chevron-right"></i>
+          </button>
+        {% else %}
+          <a href="{{ url_for('auth.login', next=request.url) }}" class="btn btn-gold" style="width: 100%; text-align: center; height: 50px;">
+            Login to Book Suite
+          </a>
+        {% endif %}
+      </form>
+
+    </div>
+
+  </div>
+</div>
+{% endblock %}

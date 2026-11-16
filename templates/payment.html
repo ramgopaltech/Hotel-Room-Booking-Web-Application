@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Demo Payment Gateway | Grand Royale Luxury Hotel{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 7rem; padding-bottom: 5rem; max-width: 750px;">
+
+  {% if payment_success %}
+    <!-- Success View -->
+    <div class="glass-card" style="padding: 3rem; text-align: center; border-color: var(--success);">
+      <div style="width: 80px; height: 80px; border-radius: 50%; background: rgba(16, 185, 129, 0.2); color: var(--success); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; margin: 0 auto 1.5rem; border: 2px solid var(--success);">
+        <i class="fa-solid fa-check"></i>
+      </div>
+      <h1 class="text-gold" style="font-size: 2.2rem; margin-bottom: 0.5rem;">Payment Confirmed!</h1>
+      <p style="color: var(--text-muted); font-size: 1.1rem; margin-bottom: 2rem;">Your luxury reservation at Grand Royale has been successfully booked and paid.</p>
+
+      <div style="background: rgba(0,0,0,0.5); padding: 1.5rem; border-radius: var(--radius-sm); text-align: left; margin-bottom: 2rem; border: 1px solid var(--border-light);">
+        <p style="margin-bottom: 0.4rem;"><strong>Booking ID:</strong> <span class="text-gold">{{ booking.booking_id }}</span></p>
+        <p style="margin-bottom: 0.4rem;"><strong>Transaction Reference:</strong> {{ payment.transaction_id }}</p>
+        <p style="margin-bottom: 0.4rem;"><strong>Amount Paid:</strong> ${{ "%.2f"|format(payment.amount) }}</p>
+        <p style="margin-bottom: 0.4rem;"><strong>Payment Method:</strong> {{ payment.payment_method }}</p>
+        <p><strong>Status:</strong> <span class="badge badge-success">Paid & Confirmed</span></p>
+      </div>
+
+      <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+        <a href="{{ url_for('booking.view_invoice', booking_id=booking.booking_id) }}" target="_blank" class="btn btn-outline">
+          <i class="fa-solid fa-file-invoice"></i> Download Invoice
+        </a>
+        <a href="{{ url_for('booking.dashboard') }}" class="btn btn-gold">
+          View Guest Dashboard <i class="fa-solid fa-circle-user"></i>
+        </a>
+      </div>
+    </div>
+
+  {% else %}
+    <!-- Payment Entry Form -->
+    <div class="section-header" style="margin-bottom: 2rem;">
+      <p class="section-subtitle">Step 3 of 3</p>
+      <h1 class="section-title">Demo <span class="text-gold">Payment Portal</span></h1>
+      <p style="color: var(--text-muted);">Simulate payment for Booking <strong>#{{ booking.booking_id }}</strong></p>
+    </div>
+
+    <div class="glass-card" style="padding: 2.5rem; border-color: var(--gold-primary);">
+      
+      <div style="background: rgba(212, 175, 55, 0.08); border: 1px solid var(--border-glass); padding: 1rem 1.2rem; border-radius: var(--radius-sm); margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <span style="font-size: 0.85rem; color: var(--text-muted);">Total Amount Due:</span>
+          <h2 style="font-size: 1.8rem; color: var(--gold-primary); font-family: var(--font-heading);">${{ "%.2f"|format(booking.total_price) }}</h2>
+        </div>
+        <span class="badge badge-warning">Demo Gateway</span>
+      </div>
+
+      <form action="{{ url_for('booking.process_payment', booking_id=booking.booking_id) }}" method="POST">
+        
+        <!-- Payment Methods -->
+        <div class="form-group" style="margin-bottom: 1.5rem;">
+          <label style="margin-bottom: 0.8rem;">Select Payment Method</label>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 1rem;">
+            <label style="background: rgba(15,20,28,0.8); border: 1px solid var(--border-glass); padding: 0.8rem; border-radius: var(--radius-sm); text-align: center; cursor: pointer;">
+              <input type="radio" name="payment_method" value="Credit Card" checked style="margin-bottom: 0.4rem; accent-color: var(--gold-primary);"><br>
+              <i class="fa-solid fa-credit-card text-gold" style="font-size: 1.4rem;"></i>
+              <div style="font-size: 0.8rem; margin-top: 0.3rem;">Credit Card</div>
+            </label>
+
+            <label style="background: rgba(15,20,28,0.8); border: 1px solid var(--border-glass); padding: 0.8rem; border-radius: var(--radius-sm); text-align: center; cursor: pointer;">
+              <input type="radio" name="payment_method" value="UPI / QR" style="margin-bottom: 0.4rem; accent-color: var(--gold-primary);"><br>
+              <i class="fa-solid fa-qrcode text-gold" style="font-size: 1.4rem;"></i>
+              <div style="font-size: 0.8rem; margin-top: 0.3rem;">UPI Instant</div>
+            </label>
+
+            <label style="background: rgba(15,20,28,0.8); border: 1px solid var(--border-glass); padding: 0.8rem; border-radius: var(--radius-sm); text-align: center; cursor: pointer;">
+              <input type="radio" name="payment_method" value="PayPal" style="margin-bottom: 0.4rem; accent-color: var(--gold-primary);"><br>
+              <i class="fa-brands fa-paypal text-gold" style="font-size: 1.4rem;"></i>
+              <div style="font-size: 0.8rem; margin-top: 0.3rem;">PayPal</div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Card Mock Input Fields -->
+        <div style="background: rgba(255, 255, 255, 0.02); padding: 1.5rem; border-radius: var(--radius-sm); border: 1px solid var(--border-light); margin-bottom: 1.5rem;">
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label for="card_name">Cardholder Name</label>
+            <input type="text" id="card_name" value="{{ booking.user.name }}" class="form-control" required>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label for="card_num">Card Number (Demo)</label>
+            <input type="text" id="card_num" value="4000 1234 5678 9010" class="form-control" required>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label for="expiry">Expiry (MM/YY)</label>
+              <input type="text" id="expiry" value="12/28" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label for="cvv">CVV</label>
+              <input type="password" id="cvv" value="777" maxlength="4" class="form-control" required>
+            </div>
+          </div>
+        </div>
+
+        <!-- Simulation Toggle -->
+        <div class="form-group" style="margin-bottom: 2rem;">
+          <label for="status_choice">Simulate Payment Outcome</label>
+          <select name="status_choice" id="status_choice" class="form-control">
+            <option value="success" selected>✅ Successful Transaction</option>
+            <option value="failed">❌ Failed / Bank Declined</option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn btn-gold" style="width: 100%; height: 50px; font-size: 1rem;">
+          Pay ${{ "%.2f"|format(booking.total_price) }} Now <i class="fa-solid fa-lock"></i>
+        </button>
+      </form>
+
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

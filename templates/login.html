@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Guest Login | Grand Royale Luxury Hotel{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+  <div class="auth-card">
+    
+    <div class="auth-header">
+      <div class="auth-logo"><i class="fa-solid fa-crown"></i></div>
+      <h1 class="auth-title">Welcome Back</h1>
+      <p class="auth-subtitle">Log in to manage your luxury stay & bookings</p>
+    </div>
+
+    <form action="{{ url_for('auth.login', next=request.args.get('next', '')) }}" method="POST" class="auth-form">
+      
+      <div class="form-group">
+        <label for="email"><i class="fa-solid fa-envelope text-gold"></i> Email Address</label>
+        <input type="email" id="email" name="email" class="form-control" placeholder="guest@domain.com" required autofocus>
+      </div>
+
+      <div class="form-group">
+        <label for="password"><i class="fa-solid fa-lock text-gold"></i> Password</label>
+        <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required>
+      </div>
+
+      <div class="auth-options">
+        <label class="checkbox-label">
+          <input type="checkbox" name="remember" value="1" checked> Remember Me
+        </label>
+      </div>
+
+      <button type="submit" class="btn btn-gold" style="width: 100%; height: 48px; margin-top: 0.5rem;">
+        Sign In <i class="fa-solid fa-arrow-right-to-bracket"></i>
+      </button>
+    </form>
+
+    <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(212, 175, 55, 0.06); border: 1px solid var(--border-glass); border-radius: var(--radius-sm); font-size: 0.8rem; color: var(--text-muted);">
+      <p style="font-weight: 600; color: var(--gold-light); margin-bottom: 0.3rem;">Demo Quick Login Accounts:</p>
+      <p><strong>Admin:</strong> admin@hotel.com / admin123</p>
+      <p><strong>Customer:</strong> john@example.com / user123</p>
+    </div>
+
+    <div class="auth-footer">
+      Don't have a guest account? <a href="{{ url_for('auth.register') }}" class="auth-link">Create Account</a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
